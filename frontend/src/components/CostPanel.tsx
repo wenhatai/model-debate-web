@@ -20,6 +20,7 @@ export default function CostPanel({ total, breakdown }: Props) {
         size="small"
         rowKey="model"
         pagination={false}
+        scroll={{ x: 'max-content' }}
         dataSource={breakdown}
         columns={[
           { title: '模型', dataIndex: 'model' },

@@ -35,6 +35,10 @@ body {
 
 .markdown-body table {
   border-collapse: collapse;
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .markdown-body th,

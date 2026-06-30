@@ -84,7 +84,11 @@ export default function HistoryPage() {
               ]}
             >
               <List.Item.Meta
-                title={item.title}
+                title={
+                  <span style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                    {item.title}
+                  </span>
+                }
                 description={
                   <Space wrap>
                     <Text type="secondary">{new Date(item.updatedAt).toLocaleString()}</Text>

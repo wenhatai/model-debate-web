@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Layout, Menu, Button } from 'antd';
+import { Layout, Menu, Button, Grid } from 'antd';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { SettingOutlined } from '@ant-design/icons';
 import HomePage from './pages/HomePage';
@@ -13,13 +13,23 @@ export default function App() {
   const navigate = useNavigate();
   const location = useLocation();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const screens = Grid.useBreakpoint();
+  const isMobile = !screens.md;
 
   const selectedKey = location.pathname.startsWith('/history') ? 'history' : 'home';
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      <Header style={{ display: 'flex', alignItems: 'center' }}>
-        <div style={{ color: '#fff', fontWeight: 600, fontSize: 18, marginRight: 32 }}>
+      <Header style={{ display: 'flex', alignItems: 'center', padding: isMobile ? '0 12px' : '0 24px' }}>
+        <div
+          style={{
+            color: '#fff',
+            fontWeight: 600,
+            fontSize: isMobile ? 15 : 18,
+            marginRight: isMobile ? 12 : 32,
+            whiteSpace: 'nowrap',
+          }}
+        >
           多模型辩论
         </div>
         <Menu
@@ -29,15 +39,18 @@ export default function App() {
           style={{ flex: 1, minWidth: 0 }}
           onClick={(e) => navigate(e.key === 'home' ? '/' : '/history')}
           items={[
-            { key: 'home', label: '发起辩论' },
-            { key: 'history', label: '历史记录' },
+            { key: 'home', label: isMobile ? '辩论' : '发起辩论' },
+            { key: 'history', label: isMobile ? '历史' : '历史记录' },
           ]}
         />
-        <Button icon={<SettingOutlined />} onClick={() => setSettingsOpen(true)}>
-          设置
+        <Button
+          icon={<SettingOutlined />}
+          onClick={() => setSettingsOpen(true)}
+        >
+          {isMobile ? '' : '设置'}
         </Button>
       </Header>
-      <Content style={{ padding: '24px', maxWidth: 1400, width: '100%', margin: '0 auto' }}>
+      <Content style={{ padding: isMobile ? 12 : 24, maxWidth: 1400, width: '100%', margin: '0 auto' }}>
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/debate" element={<DebatePage />} />

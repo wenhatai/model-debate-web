@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Row, Col, Card, Spin, Alert, Tag, Divider, Button, Select, Space } from 'antd';
+import { Row, Col, Card, Spin, Alert, Tag, Divider, Button, Select, Space, Grid } from 'antd';
 import AnswerCard from './AnswerCard';
 import CostPanel from './CostPanel';
 import FinalAnswer from './FinalAnswer';
@@ -25,6 +25,10 @@ export default function TurnView({
   running,
   onContinue,
 }: Props) {
+  const screens = Grid.useBreakpoint();
+  // antd 的 md 断点为 768px：未达到即视为移动端
+  const isMobile = !screens.md;
+
   // 本 turn 已出现的最大轮次（流式中以 currentRound 为准）
   const maxRound = useMemo(() => {
     const fromAnswers = Object.values(turn.answers).reduce((m, a) => Math.max(m, a.round), 0);
@@ -37,6 +41,47 @@ export default function TurnView({
 
   const rounds = Array.from({ length: maxRound }, (_, i) => i + 1);
   const colSpan = Math.max(6, Math.floor(24 / Math.max(1, experts.length)));
+  const multiExpert = experts.length > 1;
+
+  const renderRoundCards = (r: number) => {
+    if (isMobile) {
+      // 移动端：横向滑动条，每屏一张卡 + 露出下一张，保留「左右对比」体验
+      return (
+        <div
+          style={{
+            display: 'flex',
+            gap: 12,
+            overflowX: 'auto',
+            paddingBottom: 8,
+            scrollSnapType: 'x mandatory',
+            WebkitOverflowScrolling: 'touch',
+          }}
+        >
+          {experts.map((e) => (
+            <div
+              key={e.id}
+              style={{
+                flex: multiExpert ? '0 0 88%' : '0 0 100%',
+                maxWidth: 360,
+                scrollSnapAlign: 'start',
+              }}
+            >
+              <AnswerCard expert={e} round={r} answer={turn.answers[`${e.id}-${r}`]} />
+            </div>
+          ))}
+        </div>
+      );
+    }
+    return (
+      <Row gutter={[16, 16]} wrap>
+        {experts.map((e) => (
+          <Col key={e.id} md={colSpan} style={{ minWidth: 280 }}>
+            <AnswerCard expert={e} round={r} answer={turn.answers[`${e.id}-${r}`]} />
+          </Col>
+        ))}
+      </Row>
+    );
+  };
 
   return (
     <div style={{ marginBottom: 24 }}>
@@ -54,21 +99,18 @@ export default function TurnView({
         <Alert type="error" showIcon style={{ marginBottom: 12 }} message={turn.errorMessage} />
       )}
 
-      {/* 按轮次组织：每一轮横排展示各模型该轮输出，其后是该轮裁判结论 */}
+      {/* 按轮次组织：每一轮展示各模型该轮输出（桌面横排 / 移动端横滑），其后是该轮裁判结论 */}
       {rounds.map((r) => {
         const verdict = turn.verdicts.find((v) => v.round === r);
         return (
           <div key={r} style={{ marginBottom: 8 }}>
             <Divider orientation="left" style={{ borderColor: '#d9d9d9' }}>
               <Tag color="geekblue">第 {r} 轮</Tag>
+              {isMobile && multiExpert && (
+                <span style={{ fontSize: 12, color: '#999', fontWeight: 400 }}>← 左右滑动看各模型</span>
+              )}
             </Divider>
-            <Row gutter={[16, 16]} wrap>
-              {experts.map((e) => (
-                <Col key={e.id} xs={24} md={colSpan} style={{ minWidth: 280 }}>
-                  <AnswerCard expert={e} round={r} answer={turn.answers[`${e.id}-${r}`]} />
-                </Col>
-              ))}
-            </Row>
+            {renderRoundCards(r)}
             {verdict && (
               <Alert
                 style={{ marginTop: 8 }}
