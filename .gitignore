@@ -3,8 +3,9 @@ node_modules/
 
 # build output
 dist/
-frontend/dist/
 backend/dist/
+# 例外：frontend/dist 需提交以支持 GitHub Pages 预构建部署（CI 不跑 npm）
+!frontend/dist/
 
 # logs
 *.log

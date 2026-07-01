@@ -14,37 +14,22 @@ concurrency:
   group: pages
   cancel-in-progress: true
 
+# 采用「预构建 dist 直传」方案：本地 npm run build 后提交 frontend/dist，
+# CI 不执行任何 npm 步骤，彻底规避 runner 上 npm ci 卡死的问题。
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-    defaults:
-      run:
-        working-directory: frontend
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
       # 自动启用 GitHub Pages（首次无需手动到 Settings 开启）
       - uses: actions/configure-pages@v5
         with:
           enablement: true
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - run: npm ci --no-audit --no-fund
-      # 项目页部署在 /<仓库名>/ 子路径下，自动注入 base
-      - run: npm run build
-        env:
-          VITE_BASE: /${{ github.event.repository.name }}/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: frontend/dist
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
       - id: deployment
         uses: actions/deploy-pages@v4
