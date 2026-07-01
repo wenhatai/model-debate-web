@@ -12,8 +12,10 @@ export function hasApiKey(): boolean {
   return getApiKey().length > 0;
 }
 
+/** 保存 DMXAPI Key，并广播变更事件，便于页面重新拉取在线模型列表。 */
 export function setApiKey(value: string): void {
   localStorage.setItem(KEY_API, value);
+  window.dispatchEvent(new CustomEvent('dmxapi-key-changed'));
 }
 
 export function maskKey(key: string): string {

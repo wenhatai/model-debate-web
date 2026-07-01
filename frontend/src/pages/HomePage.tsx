@@ -46,9 +46,19 @@ export default function HomePage() {
       if (last.judgeModel) setJudgeModel(last.judgeModel);
     }
     loadModels();
+    // 保存 Key 后重新拉取在线模型列表
+    const onKeyChange = () => loadModels();
+    window.addEventListener('dmxapi-key-changed', onKeyChange);
+    return () => window.removeEventListener('dmxapi-key-changed', onKeyChange);
   }, []);
 
   const loadModels = async () => {
+    // 未填写 Key 时不请求 /models（必然 401），静默使用预置模型，不报错
+    if (!hasApiKey()) {
+      setModels(PRESET_MODELS);
+      setModelError('');
+      return;
+    }
     setLoadingModels(true);
     setModelError('');
     try {
